@@ -1,0 +1,48 @@
+version: "3.8"
+
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.7
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    networks:
+      - logging
+    restart: unless-stopped
+
+  fluentd:
+    build:
+      context: .
+      dockerfile: Dockerfile.fluentd
+    user: root
+    environment:
+      - FLUENTD_CONF=fluentd.conf
+    volumes:
+      - ./fluentd/fluentd.conf:/fluentd/etc/fluentd.conf
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    networks:
+      - logging
+    restart: unless-stopped
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.17.7
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    networks:
+      - logging
+      - proxy
+    restart: unless-stopped
+
+networks:
+  logging:
+  proxy:
+    external: true
+
+volumes:
+  elasticsearch-data:

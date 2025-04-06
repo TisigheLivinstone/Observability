@@ -1,0 +1,84 @@
+version: "3.8"
+
+services:
+  # ====================
+  # Node Exporter Instances
+  # ==================== # Expose on port 9101 for sbx
+  node-exporter-prd:
+    image: ${NE_IMAGE}  # Node Exporter Image
+    container_name: node-exporter-prd
+    command:
+      - '--path.rootfs=/host'
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)'
+    ports:
+      - '${NE_PORT_PRD}:${NE_PRD_TARGET}'  # Expose on port 9100 for prd
+    restart: unless-stopped
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+      - /:/host:ro,rslave
+    networks:
+      - monitoring
+      - proxy
+
+  # ====================
+  # cAdvisor Instances
+  # ====================
+  cadvisor-prd:
+    image: ${CA_IMAGE}
+    container_name: cadvisor-prd
+    command: ["-port=8100"]
+    ports:
+      - '${CA_PORT_PRD}:${CA_PRD_TARGET}'  # Expose on port 8084 for prd
+    restart: unless-stopped
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+    networks:
+      - monitoring
+      - proxy
+  # ====================
+  # Prometheus
+  # ====================
+  prometheus:
+    image: ${PROM_IMAGE}
+    container_name: prometheus
+    volumes:
+      - ./prometheus-config/:/etc/prometheus/
+      - prometheus-data:/prometheus
+    ports:
+      - '${PROM_PORT}:${PROM_TARGET_PORT}'
+    restart: unless-stopped
+    networks:
+      - monitoring
+
+  # ====================
+  # Grafana
+  # ====================
+  grafana:
+    image: ${GF_IMAGE}
+    container_name: grafana
+    ports:
+      - '${GF_PORT}:${GF_TARGET_PORT}'
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_ADMIN_PASSWORD}
+    volumes:
+      - grafana-data:/var/lib/grafana
+    restart: unless-stopped
+    networks:
+      - monitoring
+
+networks:
+  monitoring:
+    external: true
+  proxy:
+    external: true
+
+volumes:
+  grafana-data:
+  prometheus-data:

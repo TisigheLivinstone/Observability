@@ -1,0 +1,10 @@
+Mastering Observability with the EFK Stack in Kubernetes: A Technical Guide
+In modern cloud-native environments, maintaining visibility into your applications is essential. The EFK stack—Elasticsearch, Fluent Bit, and Kibana—has become a go-to solution for centralized log management and troubleshooting in Kubernetes environments. Here’s a technical dive into how the EFK stack works and how to set it up in Kubernetes.
+
+Why EFK for Observability?
+Observability relies on three pillars: metrics, logs, and traces. Logs, in particular, are crucial for debugging, performance analysis, and security audits. Traditional logging methods aren’t practical in a microservices architecture because logs are scattered across numerous services. Here, a centralized logging system like EFK streamlines the process.
+
+Elasticsearch acts as the log store, providing powerful search capabilities.
+Fluent Bit is a lightweight log processor and forwarder, ideal for Kubernetes deployments.
+Kibana provides visualization, enabling teams to query and visualize logs.
+Step 1: Setting Up the EFK Stack on Kubernetes

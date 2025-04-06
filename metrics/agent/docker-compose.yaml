@@ -1,0 +1,49 @@
+version: "3.8"
+
+services:
+  # ====================
+  # Node Exporter Instances
+  # ====================
+  node-exporter-prd:
+    image: ${NE_IMAGE}  # Node Exporter Image
+    container_name: node-exporter-prd
+    command:
+      - '--path.rootfs=/host'
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)'
+    ports:
+      - '${NE_PORT_PRD}:${NE_PRD_TARGET}'  # Expose on port 9100 for prd
+    restart: unless-stopped
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+      - /:/host:ro,rslave
+    networks:
+      - monitoring
+      - proxy
+  # ====================
+  # cAdvisor Instances
+  # ====================
+  cadvisor-prd:
+    image: ${CA_IMAGE}
+    container_name: cadvisor-prd
+    command: ["-port=8100"]
+    ports:
+      - '${CA_PORT_PRD}:${CA_PRD_TARGET}'  # Expose on port 8100 for prd
+    restart: unless-stopped
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+    networks:
+      - monitoring
+      - proxy
+
+networks:
+  monitoring:
+    external: true
+  proxy:
+    external: true

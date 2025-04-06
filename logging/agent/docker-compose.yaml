@@ -1,0 +1,14 @@
+version: "3.8"
+
+services:
+  fluentd-forwarder:
+    build:
+      context: ./fluentd
+      dockerfile: Dockerfile.forwarder
+    user: root
+    environment:
+      - FLUENTD_CONF=forwarder.conf
+    volumes:
+      - ./fluentd/forwarder.conf:/fluentd/etc/fluentd.conf
+      - /var/log/app/:/var/log/app/:ro  # Mount application logs
+    restart: unless-stopped
