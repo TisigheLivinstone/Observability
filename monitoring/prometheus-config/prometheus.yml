@@ -11,7 +11,7 @@ scrape_configs:
       - targets: ['cadvisor-prd:8100']
   - job_name: "sbx-ca-container-metrics"
     static_configs:
-      - targets: ['10.1050.111:8100']
+      - targets: ['target-hostname:8100']
   - job_name: "sbx-ne-container-metrics"
     static_configs:
-      - targets: ['10.1050.111:9100']
+      - targets: ['target-hostname:9100']
